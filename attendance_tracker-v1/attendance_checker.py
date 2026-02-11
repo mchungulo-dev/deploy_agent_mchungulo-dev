@@ -1,13 +1,3 @@
-#!/bin/bash
-
-read -p "Enter the version:" input
-
-mkdir "attendance_tracker-$input"
-echo "attendance tracker folder created"
-
-touch "attendance_tracker-$input/attendance_checker.py"
-
-cat > "attendance_tracker-$input/attendance_checker.py" << 'EOF'
 import csv
 import json
 import os
@@ -53,33 +43,3 @@ def run_attendance_check():
 
 if __name__ == "__main__":
     run_attendance_check()
-EOF
-
-mkdir "attendance_tracker-$input/Helpers"
-
-mkdir "attendance_tracker-$input/reports"
-
-cat > "attendance_tracker-$input/Helpers/assets.csv" << 'EOF'
-Email,Names,Attendance Count,Absence Count
-alice@example.com,Alice Johnson,14,1
-bob@example.com,Bob Smith,7,8
-charlie@example.com,Charlie Davis,4,11
-diana@example.com,Diana Prince,15,0
-EOF
-
-cat > "attendance_tracker-$input/Helpers/config.json" << 'EOF'
-{
-    "thresholds": {
-        "warning": 75,
-        "failure": 50
-    },
-    "run_mode": "live",
-    "total_sessions": 15
-}
-EOF
-
-cat > "attendance_tracker-$input/reports/reports.log" << 'EOF'
---- Attendance Report Run: 2026-02-06 18:10:01.468726 ---
-[2026-02-06 18:10:01.469363] ALERT SENT TO bob@example.com: URGENT: Bob Smith, your attendance is 46.7%. You will fail this class.
-[2026-02-06 18:10:01.469424] ALERT SENT TO charlie@example.com: URGENT: Charlie Davis, your attendance is 26.7%. You will fail this class.
-EOF
