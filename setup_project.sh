@@ -1,13 +1,72 @@
 #!/bin/bash
 
+# Trap to handle script interruption
+cleanup_on_exit() {
+    echo ""
+    echo ""
+    echo "⚠️  Script interrupted by user!"
+    echo "Cleaning up and creating archive of current state..."
+    
+# Create archive of the current state
+    if [ -d "attendance_tracker_${input}" ]; then
+        tar -czf "attendance_tracker_${input}_archive.tar.gz" "attendance_tracker_${input}"
+        echo "Archive created: attendance_tracker_${input}_archive.tar.gz"
+        
+        # Delete the incomplete directory
+        rm -rf "attendance_tracker_{$input}"
+        echo "Incomplete directory removed: attendance_tracker_${input}"
+    else
+        echo "No directory found to archive."
+    fi
+    
+    echo "Cleanup complete. Exiting."
+    exit 1
+}
+trap cleanup_on_exit SIGINT
+
+# Check if python3 is installed
+if python3 --version &> /dev/null; then
+    echo "Health Check: Python 3 is installed and ready to use."
+else
+    echo "Warning: Python 3 is NOT found. The application may not run correctly."
+
+fi
+
+# Ask the user for an input regarding what version of the Attendance Tracker they'd like
 read -p "Enter the version:" input
 
-mkdir "attendance_tracker-$input"
+#Check if main directory exists
+if [ -d "attendance_tracker_${input}" ]; then
+	echo "Directory exists"
+        exit 1
+fi
+
+# Ask the 'Yes/No' question for the user to update their settings
+read -p "Would you like to update the attendance thresholds? (y/n):" update_answer
+
+# Use an if statement to check if they said yes
+if [ "$update_answer" == "y" ]; then
+
+# Ask the user for the Warning Threshold (Default 75%)
+read -p "Enter new Warning threshold (e.g., 80):" warning_percentage
+
+# Ask the user for the Failure Threshold (Default 50%)
+read -p "Enter new Failure threshold (e.g., 40):" failure_percentage
+
+# Message they'll recieve
+echo "Updating thresholds to $warning_percentage% and $failure_percentage%..."
+
+fi
+
+# Create the directory according to the input they gave you
+mkdir attendance_tracker_${input}
 echo "attendance tracker folder created"
 
-touch "attendance_tracker-$input/attendance_checker.py"
+# Create the Python file
+touch "attendance_tracker_${input}/attendance_checker.py"
 
-cat > "attendance_tracker-$input/attendance_checker.py" << 'EOF'
+# Add content in the Python file
+cat > "attendance_tracker_${input}/attendance_checker.py" << 'EOF'
 import csv
 import json
 import os
@@ -55,11 +114,14 @@ if __name__ == "__main__":
     run_attendance_check()
 EOF
 
-mkdir "attendance_tracker-$input/Helpers"
+# Create the Helpers directory
+mkdir "attendance_tracker_${input}/Helpers"
 
-mkdir "attendance_tracker-$input/reports"
+# Create the reports directory
+mkdir "attendance_tracker_${input}/reports"
 
-cat > "attendance_tracker-$input/Helpers/assets.csv" << 'EOF'
+# Create the assets.csv file in the Helpers directory and add content in it 
+cat > "attendance_tracker_${input}/Helpers/assets.csv" << 'EOF'
 Email,Names,Attendance Count,Absence Count
 alice@example.com,Alice Johnson,14,1
 bob@example.com,Bob Smith,7,8
@@ -67,7 +129,8 @@ charlie@example.com,Charlie Davis,4,11
 diana@example.com,Diana Prince,15,0
 EOF
 
-cat > "attendance_tracker-$input/Helpers/config.json" << 'EOF'
+# Create the config.json file in the Helpers directory and add content in it
+cat > "attendance_tracker_${input}/Helpers/config.json" << 'EOF'
 {
     "thresholds": {
         "warning": 75,
@@ -78,8 +141,14 @@ cat > "attendance_tracker-$input/Helpers/config.json" << 'EOF'
 }
 EOF
 
-cat > "attendance_tracker-$input/reports/reports.log" << 'EOF'
+# Create the reports.log file in the reports directory and add content in it
+cat > "attendance_tracker_${input}/reports/reports.log" << 'EOF'
 --- Attendance Report Run: 2026-02-06 18:10:01.468726 ---
 [2026-02-06 18:10:01.469363] ALERT SENT TO bob@example.com: URGENT: Bob Smith, your attendance is 46.7%. You will fail this class.
 [2026-02-06 18:10:01.469424] ALERT SENT TO charlie@example.com: URGENT: Charlie Davis, your attendance is 26.7%. You will fail this class.
 EOF
+
+# The sed command
+sed -i "s/75%/$warning_percentage%/g" attendance_tracker_${input}/Helpers/config.json
+sed -i "s/50%/$failure_percentage%/g" attendance_tracker_${input}/Helpers/config.json
+
