@@ -1,28 +1,27 @@
 #!/bin/bash
 
 # Trap to handle script interruption
-cleanup_on_exit() {
-    echo ""
-    echo ""
-    echo "⚠️  Script interrupted by user!"
-    echo "Cleaning up and creating archive of current state..."
-    
-# Create archive of the current state
-    if [ -d "attendance_tracker_${input}" ]; then
-        tar -czf "attendance_tracker_${input}_archive.tar.gz" "attendance_tracker_${input}"
-        echo "Archive created: attendance_tracker_${input}_archive.tar.gz"
-        
-        # Delete the incomplete directory
-        rm -rf "attendance_tracker_{$input}"
-        echo "Incomplete directory removed: attendance_tracker_${input}"
+handle_termination() {
+    echo -e "\n\n⚠️  Interrupted! Cleaning up..."
+
+    # Use the specific version variable you captured
+    local target="attendance_tracker_${input}"
+
+    # Check if THAT specific directory exists
+    if [ -n "$input" ] && [ -d "$target" ]; then
+        echo "Archiving current project: $target"
+        tar -czf "${target}_archive.tar.gz" "$target"
+        rm -rf "$target"
+        echo "Done. Workspace clean."
     else
-        echo "No directory found to archive."
+        # This handles the case where you hit Ctrl+C before typing a version
+        echo "No specific project folder found to archive."
     fi
-    
-    echo "Cleanup complete. Exiting."
+
     exit 1
 }
-trap cleanup_on_exit SIGINT
+
+trap handle_termination SIGINT
 
 # Check if python3 is installed
 if python3 --version &> /dev/null; then
@@ -149,6 +148,5 @@ cat > "attendance_tracker_${input}/reports/reports.log" << 'EOF'
 EOF
 
 # The sed command
-sed -i "s/75%/$warning_percentage%/g" attendance_tracker_${input}/Helpers/config.json
-sed -i "s/50%/$failure_percentage%/g" attendance_tracker_${input}/Helpers/config.json
-
+sed -i "s/\"warning\": [0-9]*/\"warning\": $warning_percentage/" "attendance_tracker_${input}/Helpers/config.json"
+sed -i "s/\"failure\": [0-9]*/\"failure\": $failure_percentage/" "attendance_tracker_${input}/Helpers/config.json"
