@@ -1,14 +1,21 @@
 #!/bin/bash
 
+# Ask the user for an input regarding what version of the Attendance Tracker they'd like
+read -p "Enter the directory name: attendance_tracker_" input
+
+# Create the directory according to the input they gave you
+mkdir attendance_tracker_${input}
+echo "attendance tracker folder created"
+
 # Trap to handle script interruption
 handle_termination() {
     echo -e "\n\n⚠️  Interrupted! Cleaning up..."
 
     # Use the specific version variable you captured
-    local target="attendance_tracker_${input}"
+    target="attendance_tracker_${input}"
 
     # Check if THAT specific directory exists
-    if [ -n "$input" ] && [ -d "$target" ]; then
+    if [ -d "$target" ]; then
         echo "Archiving current project: $target"
         tar -czf "${target}_archive.tar.gz" "$target"
         rm -rf "$target"
@@ -31,14 +38,11 @@ else
 
 fi
 
-# Ask the user for an input regarding what version of the Attendance Tracker they'd like
-read -p "Enter the version:" input
-
 #Check if main directory exists
-if [ -d "attendance_tracker_${input}" ]; then
-	echo "Directory exists"
-        exit 1
-fi
+# if [ -d "attendance_tracker_${input}" ]; then
+# 	echo "Directory exists"
+#         exit 1
+# fi
 
 # Ask the 'Yes/No' question for the user to update their settings
 read -p "Would you like to update the attendance thresholds? (y/n):" update_answer
@@ -58,8 +62,10 @@ echo "Updating thresholds to $warning_percentage% and $failure_percentage%..."
 fi
 
 # Create the directory according to the input they gave you
-mkdir attendance_tracker_${input}
-echo "attendance tracker folder created"
+# mkdir attendance_tracker_${input}
+# echo "attendance tracker folder created"
+
+# trap handle_termination SIGINT
 
 # Create the Python file
 touch "attendance_tracker_${input}/attendance_checker.py"
