@@ -1,6 +1,6 @@
 Written by: Memory Chungulo
 Email: m.chungulo@alustudent.com
-Video Link:
+Video Link: https://drive.google.com/file/d/1GiM_3Lbr9PCrsXFVWOkSrzLSa6G0Tu_P/view?usp=sharing
 
 # Student Attendance Tracker - Project Factory
 
